@@ -1,0 +1,293 @@
+generator prisma {
+  provider = "prisma-client-js"
+}
+
+// https://gist.github.com/ankitnetwork18/4509792 - for all city
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model car_Brand {
+  id         Int         @id @default(autoincrement())
+  brand      String      @unique
+  car_models car_model[]
+}
+
+model car_model {
+  id      Int       @id @default(autoincrement())
+  Brand   car_Brand @relation(fields: [brandId], references: [id])
+  brandId Int
+  model   String    @unique
+  vehical vehical[]
+}
+
+model vehical {
+  id               Int                @id @default(autoincrement())
+  model            car_model          @relation(fields: [modelId], references: [id])
+  modelId          Int
+  trainer          trainer            @relation(fields: [trainerId], references: [id])
+  trainerId        Int
+  owner            owner              @relation(fields: [ownerId], references: [id])
+  ownerId          Int
+  selected_vehical selected_vehical[]
+}
+
+model time_slot {
+  id               Int                @id @default(autoincrement())
+  start_time       String
+  end_time         String
+  owner            owner              @relation(fields: [OwnerId], references: [id])
+  OwnerId          Int
+  purchased_course purchased_course[]
+}
+
+model school_image {
+  id       Int    @id @default(autoincrement())
+  school   school @relation(fields: [schoolId], references: [id])
+  schoolId Int
+  filename String
+  filepath String
+}
+
+model state {
+  id     Int      @id @default(autoincrement())
+  state  String
+  school school[]
+}
+
+model city {
+  id     Int      @id @default(autoincrement())
+  city   String
+  school school[]
+}
+
+model curriculum {
+  id       Int    @id @default(autoincrement())
+  title    String
+  days     Int
+  course   course @relation(fields: [courseId], references: [id])
+  courseId Int
+}
+
+model selected_vehical {
+  id               Int                @id @default(autoincrement())
+  vehical          vehical            @relation(fields: [vehicalID], references: [id])
+  vehicalID        Int
+  price            Int
+  course           course             @relation(fields: [courseId], references: [id])
+  courseId         Int
+  purchased_course purchased_course[]
+}
+
+model owner {
+  id              Int               @id @default(autoincrement())
+  name            String
+  email           String            @unique
+  password        String
+  number          String
+  createdAt       DateTime          @default(now())
+  updatesAt       DateTime          @updatedAt
+  vehical         vehical[]
+  time_slot       time_slot[]
+  school          school[]
+  owner_expense   owner_expense[]
+  chat_With_Owner chat_With_Owner[]
+}
+
+model school {
+  id              Int               @id @default(autoincrement())
+  name            String
+  conNumber       String
+  address         String?
+  state           state?            @relation(fields: [stateId], references: [id])
+  stateId         Int?
+  city            city?             @relation(fields: [cityId], references: [id])
+  cityId          Int?
+  frontImage      String?
+  owner           owner?            @relation(fields: [ownerId], references: [id])
+  ownerId         Int?
+  status          Boolean?          @default(true)
+  createdAt       DateTime?         @default(now())
+  updatedAt       DateTime?         @updatedAt
+  school_image    school_image[]
+  course          course[]
+  owner_expense   owner_expense[]
+  license         license[]
+  trainer         trainer[]
+  trainer_expense trainer_expense[]
+  school_review   school_review[]
+  pincode         Int?
+}
+
+model course {
+  id               Int                @id @default(autoincrement())
+  day              Int
+  price            Int
+  school           school             @relation(fields: [schoolId], references: [id])
+  schoolId         Int
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  curriculum       curriculum[]
+  selected_vehical selected_vehical[]
+  purchased_course purchased_course[]
+}
+
+model owner_expense {
+  id        Int      @id @default(autoincrement())
+  reason    String
+  owner     owner    @relation(fields: [ownerId], references: [id])
+  ownerId   Int
+  school    school   @relation(fields: [schoolId], references: [id])
+  schoolId  Int
+  amount    Int?
+  createdAt DateTime @default(now())
+  status    Boolean  @default(false)
+  updateAt  DateTime @updatedAt
+}
+
+model licence_type {
+  id      Int       @id @default(autoincrement())
+  type    String
+  license license[]
+}
+
+model blood_group {
+  id          Int       @id @default(autoincrement())
+  blood_group String
+  license     license[]
+}
+
+model learner {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  email             String              
+  number            String              @unique
+  location          String              @default("india")
+  password          String
+  trainer           trainer?             @relation(fields: [trainerID], references: [id])
+  trainerID         Int?
+  transectionId     Int?
+  purchased_course  purchased_course[]
+  license           license[]
+  chat_With_Owner   chat_With_Owner[]
+  chat_With_trainer chat_With_trainer[]
+  school_review     school_review[]
+}
+
+model purchased_course {
+  id               Int              @id @default(autoincrement())
+  learner          learner          @relation(fields: [learnerId], references: [id])
+  learnerId        Int
+  trainer          trainer          @relation(fields: [trainerId], references: [id])
+  trainerId        Int
+  course           course           @relation(fields: [courseId], references: [id])
+  courseId         Int
+  createdAt        DateTime         @default(now())
+  totalPrice       Int
+  time_slot        time_slot        @relation(fields: [timeSlot], references: [id])
+  timeSlot         Int
+  selected_vehical selected_vehical @relation(fields: [vechical], references: [id])
+  vechical         Int
+  paymentId        String
+  updateAt         DateTime         @updatedAt
+}
+
+model school_review {
+  id        Int      @id @default(autoincrement())
+  school    school   @relation(fields: [schoolId], references: [id])
+  schoolId  Int
+  learner   learner  @relation(fields: [learnerId], references: [id])
+  learnerId Int
+  createdAt DateTime @default(now())
+  rating    Float
+  review    String
+}
+
+model license {
+  id                  Int                   @id @default(autoincrement())
+  school              school                @relation(fields: [schoolId], references: [id])
+  schoolId            Int
+  learner             learner               @relation(fields: [learnerId], references: [id])
+  learnerId           Int
+  createdAt           DateTime              @default(now())
+  licence_type        licence_type          @relation(fields: [typeId], references: [id])
+  typeId              Int
+  Fullname            String
+  fatherName          String
+  DOB                 DateTime
+  gender              String
+  blood_group         blood_group           @relation(fields: [bloodGroupId], references: [id])
+  bloodGroupId        Int
+  photo               Json
+  ageProof            String?
+  ageDocument         String?
+  addressProof        String?
+  addressDoc          String
+  updateAt            DateTime    @updatedAt
+  license_application license_application[]
+}
+
+model license_application {
+  id        Int      @id @default(autoincrement())
+  license   license  @relation(fields: [licenseId], references: [id])
+  licenseId Int
+  paymentId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model trainer {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  email             String
+  number            String
+  expiration        Float
+  profileImg        String?
+  salary            Int
+  password          String
+  school            school              @relation(fields: [schoolId], references: [id])
+  schoolId          Int
+  vechical          vehical[]
+  trainer_expense   trainer_expense[]
+  chat_With_trainer chat_With_trainer[]
+  purchased_course  purchased_course[]
+  learner           learner[]
+}
+
+model trainer_expense {
+  id        Int      @id @default(autoincrement())
+  reason    String
+  amount    Int
+  trainer   trainer  @relation(fields: [trainerID], references: [id])
+  trainerID Int
+  school    school   @relation(fields: [schoolId], references: [id])
+  schoolId  Int
+  createdAt DateTime @default(now())
+  status    Boolean  @default(false)
+  updateAt  DateTime @updatedAt
+}
+
+model chat_With_Owner {
+  id        Int      @id @default(autoincrement())
+  learner   learner  @relation(fields: [learnerId], references: [id])
+  learnerId Int
+  owner     owner    @relation(fields: [ownerId], references: [id])
+  ownerId   Int
+  message   String
+  status    Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model chat_With_trainer {
+  id        Int      @id @default(autoincrement())
+  learner   learner  @relation(fields: [learnerId], references: [id])
+  learnerId Int
+  trainer   trainer  @relation(fields: [trainerId], references: [id])
+  trainerId Int
+  message   String
+  status    Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
